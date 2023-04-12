@@ -1,3 +1,8 @@
+<?php
+require "../../config/config.php";
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -17,7 +22,7 @@
         <h1><a href="#">Printku</a></h1>
         <nav>
             <ul>
-                <li><a href="#">Beranda</a></li>
+                <li><a href="index.php">Beranda</a></li>
                 <li><a href="#">Product</a></li>
                 <li><a href="#">Cart</a></li>
                 <li><a href="../admin/logout.php">Logout</a></li>
@@ -25,33 +30,27 @@
         </nav>
     </header>
 
-    <div class="container">
-        <?php
-
-        require "../../config/config.php";
+    <?php
 
 
-        $products = mysqli_query($conn, "SELECT * FROM products ORDER BY id_products DESC");
-        if (mysqli_num_rows($products) > 0) {
-
-            while ($row = mysqli_fetch_array($products)) {
-                ?>
-                <div class="card w-50">
-                    <div class="card-body">
-                        <image src="../../assets/img/<?php echo $row['gambar'] ?>" width='200px'>
-                            <h5 class="card-title">
-                                <?php echo $row['name'] ?>
-                            </h5>
-                            <p class="card-text">
-                                Rp.
-                                <?php echo number_format($row['price']) ?>
-                            </p>
-                            <a href="detail-product.php?id=<?php echo $row["id_products"] ?>" class="btn btn-primary">Button</a>
-                    </div>
-                </div>
-                </tr>
-            <?php }
-        } else ?>
+    $product = mysqli_query($conn, "SELECT * FROM products WHERE id_products = '" . $_GET['id'] . "' ");
+    $p = mysqli_fetch_object($product)
+        ?>
+    <div class="container mt-5 me-5 d-flex">
+        <div class="card p-5">
+            <image src="../../assets/img/<?php echo $p->gambar ?>" width='200px'>
+        </div>
+        <div class="card-body ms-5">
+            <h5 class="card-title">
+                <?php echo $p->name ?>
+            </h5>
+            <input type="number" name="count" stlye="input[type:number]: width: 50px" />
+            <p class="card-text">
+                Rp.
+                <?php echo number_format($p->price) ?>
+            </p>
+            <a href="detail-transaksi.php" class="btn btn-primary">Button</a>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"

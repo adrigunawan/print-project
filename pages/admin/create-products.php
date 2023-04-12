@@ -1,21 +1,67 @@
 <?php
-
-require "../../config/config.php";
-
+require '../../config/config.php';
 session_start();
 
-error_reporting(0);
+// error_reporting(0);
 
-if ($_SESSION["role"] == "admin") {
+if ($_SESSION['status-login'] != true) {
     echo "<script>
     alert(You must login);
 
-    window.location.href = 'index.php';
+    window.location.href = 'login.php';
     </script>";
 }
 
-?>
 
+if (isset($_POST["addnewbarang"])) {
+
+    // print_r($_FILES['gambar']);
+
+    // Menampung inputan file dari file
+
+    $namabarang = $_POST['name'];
+    $stockbarang = $_POST['stock'];
+    $price = $_POST['price'];
+
+    // Menampung data format file yang dizinkan
+    $nama_file = $_FILES['gambar']['name'];
+    $tmp_file = $_FILES['gambar']['tmp_name'];
+    $type_file = explode('.', $nama_file);
+    $input_file = $type_file[1];
+
+    $new_file = 'products' . time() . '.' . $input_file;
+
+    // input yang dizinkan
+    $type_approved = array('jpg', 'png', 'jpeg', 'gif');
+
+    // validasi format data
+
+    if (!in_array($input_file, $type_approved)) {
+
+        echo '<script>
+        
+        alert("format tidak sesuai");
+        
+        </script>';
+
+    } else {
+        move_uploaded_file($tmp_file, '../../assets/img/' . $new_file);
+
+        $insert = mysqli_query($conn, "INSERT INTO products VALUES(null, '" . $namabarang . "','" . $new_file . "','" . $stockbarang . "','" . $price . "')");
+
+        if ($insert) {
+            echo '<script>
+            
+            alert("product berhasil ditambahkan");
+            window.location.href = "index.php";
+
+            </script>';
+        } else {
+            echo 'Produk gagal ditambahkan', mysqli_error($conn);
+        }
+    }
+}
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -32,7 +78,7 @@ if ($_SESSION["role"] == "admin") {
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 </head>
 
-<body class="sb-nav-fixed">
+<body>
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
         <!-- Navbar Brand-->
         <a class="navbar-brand ps-3" href="index.php">PrintKu - Admin</a>
@@ -54,7 +100,7 @@ if ($_SESSION["role"] == "admin") {
                 <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown"
                     aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                    <li><a class="dropdown-item" href="#!">Settings</a></li>
+                    <li><a class="dropdown-item" href="profile.php">Settings</a></li>
                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                     <li>
                         <hr class="dropdown-divider" />
@@ -73,6 +119,7 @@ if ($_SESSION["role"] == "admin") {
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard
                         </a>
+                        <div class="sb-sidenav-menu-heading">Interface</div>
                         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
                             data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
                             <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
@@ -82,9 +129,7 @@ if ($_SESSION["role"] == "admin") {
                         <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne"
                             data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="create-products.php">Buat Produk</a>
-
-
+                                <a class="nav-link" href="update-products.php">Update dan Create Produk</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages"
@@ -99,27 +144,20 @@ if ($_SESSION["role"] == "admin") {
                                 <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
                                     data-bs-target="#pagesCollapseAuth" aria-expanded="false"
                                     aria-controls="pagesCollapseAuth">
-                                    Authentication
+                                    Autentikasi
                                     <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                                 </a>
                                 <div class="collapse" id="pagesCollapseAuth" aria-labelledby="headingOne"
                                     data-bs-parent="#sidenavAccordionPages">
                                     <nav class="sb-sidenav-menu-nested nav">
-                                        <a class="nav-link" href="login.php">Login</a>
-                                        <a class="nav-link" href="register.php">Register</a>
+                                        <a class="nav-link" href="login.html">Login</a>
+                                        <a class="nav-link" href="register.html">Register</a>
                                     </nav>
                                 </div>
-                                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
-                                    data-bs-target="#pagesCollapseError" aria-expanded="false"
-                                    aria-controls="pagesCollapseError">
-                                    Error
-                                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                                </a>
-
                             </nav>
                         </div>
                         <div class="sb-sidenav-menu-heading">Addons</div>
-                        <a class="nav-link" href="charts.php">
+                        <a class="nav-link" href="charts.html">
                             <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
                             Charts
                         </a>
@@ -127,73 +165,88 @@ if ($_SESSION["role"] == "admin") {
                             <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
                             Tables
                         </a>
-                        <a class="nav-link" href="logout.php">
-                            <div class="sb-nav-link-icon"><i class="fas fa-sign-out"></i></div>
-                            logout
-                        </a>
                     </div>
                 </div>
                 <div class="sb-sidenav-footer">
                     <div class="small">Logged in as:</div>
                     <p>
-                        <?php echo $_SESSION["admin"] ?>
+                        <?php echo $_SESSION['a_global']->username ?>
                     </p>
                 </div>
             </nav>
         </div>
         <div id="layoutSidenav_content">
             <main>
-                <div class="container-fluid px-4">
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <i class="fas fa-table me-1"></i>
-                            DataTable Example
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="container-fluid">
+                        <h4>Tambah product</h4>
+                        <div class="mb-3">
+                            <label for='products' class=" w-50">nama barang</label>
+                            <input class="form-control w-50" type="text" name="name" require>
                         </div>
-                        <div class="card-body">
-                            <table class="table table-striped">
-                                <tr>
-                                    <thead>
-                                        <td>id</td>
-                                        <td>Nama Barang</td>
-                                        <td>Gambar</td>
-                                        <td>stock</td>
-                                        <td>price</td>
-                                    </thead>
-                                </tr>
-
-                                <tbody>
-                                    <?php
-                                    $i = 1;
-                                    $products = mysqli_query($conn, "SELECT * FROM products ORDER BY id_products DESC");
-                                    if (mysqli_num_rows($products) > 0) {
-
-                                        while ($row = mysqli_fetch_array($products)) {
-                                            ?>
-                                            <tr>
-                                                <td>
-                                                    <?php echo $i++ ?>
-                                                </td>
-                                                <td>
-                                                    <?php echo $row['name'] ?>
-                                                </td>
-                                                <td>
-                                                    <img src="../../assets/img/<?php echo $row['gambar'] ?>" width="50px">
-                                                </td>
-                                                <td>
-                                                    <?php echo $row['stock'] ?>
-                                                </td>
-                                                <td>
-                                                    Rp.
-                                                    <?php echo number_format($row['price']) ?>
-                                                </td>
-                                            </tr>
-                                        <?php }
-                                    } else ?>
-                                </tbody>
-                            </table>
+                        <div class="mb-3">
+                            <label for='products' class=" w-50">Gambar barang</label>
+                            <input class="form-control w-50" type="file" name="gambar" require>
+                        </div>
+                        <div class="mb-3">
+                            <label for='products' class=" w-50">Stock barang</label>
+                            <input class="form-control w-50" type="number" name="stock" require>
+                        </div>
+                        <div class="mb-3">
+                            <label for='products' class=" w-50">Harga barang</label>
+                            <input class="form-control w-50" type="number" name="price" require>
+                        </div>
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary" name="addnewbarang">Add barang</button>
                         </div>
                     </div>
-                </div>
+                </form>
+                <table class="table table-striped">
+                    <tr>
+                        <thead>
+                            <td>Id</td>
+                            <td>Nama Barang</td>
+                            <td>Gambar</td>
+                            <td>Stock</td>
+                            <td>Price</td>
+                            <td>Aksi</td>
+                        </thead>
+                    </tr>
+
+                    <tbody>
+                        <?php
+                        $i = 1;
+                        $products = mysqli_query($conn, "SELECT * FROM products ORDER BY id_products DESC");
+                        if (mysqli_num_rows($products) > 0) {
+                            while ($row = mysqli_fetch_array($products)) {
+                                ?>
+                                <tr>
+                                    <td>
+                                        <?php echo $i++ ?>
+                                    </td>
+                                    <td>
+                                        <?php echo $row['name'] ?>
+                                    </td>
+                                    <td>
+                                        <img src="../../assets/img/<?php echo $row['gambar'] ?>" width="50px">
+                                    </td>
+                                    <td>
+                                        <?php echo $row['stock'] ?>
+                                    </td>
+                                    <td>
+                                        Rp.
+                                        <?php echo number_format($row['price']) ?>
+                                    </td>
+                                    <td>
+                                        <a href="edit-products.php?id=<?php echo $row['id_products'] ?>">Edit</a>
+                                        |
+                                        <a href="delete-products.php?id=<?php echo $row['id_products'] ?>">Delete</a>
+                                    </td>
+                                </tr>
+                            <?php }
+                        } else ?>
+                    </tbody>
+                </table>
             </main>
             <footer class="py-4 bg-light mt-auto">
                 <div class="container-fluid px-4">

@@ -1,11 +1,11 @@
 <?php
 
-require '../config/config.php';
+require '../../config/config.php';
 
 
 if (isset($_POST["register"])) {
 	$username = $_POST['username'];
-	$password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+	$password = md5($_POST['password']);
 	$email = $_POST['email'];
 	$alamat = $_POST['alamat'];
 	$notelp = $_POST['no_telp'];
@@ -30,11 +30,8 @@ if (isset($_POST["register"])) {
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-
-	<link rel="stylesheet" type="text/css" href="../css/style.css">
-
+	<link rel="stylesheet" type="text/css" href="../../css/style.css">
 	<title>Register Form </title>
 </head>
 

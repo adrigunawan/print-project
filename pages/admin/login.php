@@ -1,31 +1,50 @@
 <?php
 
-require '../config/config.php';
+require '../../config/config.php';
 
 
 if (isset($_POST["login"])) {
+	session_start();
+
 	$username = $_POST['username'];
 	$password = $_POST['password'];
 
-	$result = mysqli_query($conn, "SELECT * FROM admin WHERE username='$username'");
+	$result = mysqli_query($conn, "SELECT * FROM admin WHERE username='" . $username . "' AND password = '" . md5($password) . "'");
 
-	$data = mysqli_num_rows($result);
-	$checkuser = mysqli_fetch_array($result);
-	$upassword = $checkuser['password'];
+	if (mysqli_num_rows($result) > 0) {
+		$d = mysqli_fetch_object($result);
 
-	if ($checkuser > 0) {
-		if (password_verify($password, $upassword)) {
-			echo ("<script>alert('Login berhasil')</script>");
-			$row = $checkuser;
-			$_SESSION['username'] = $row['username'];
-			header("Location: index.php");
-		} else {
+		if ($d->role == "user") {
+			$_SESSION['user'] = $username;
+			$_SESSION['a_global'] = $d;
+			$_SESSION['id'] = $d->id;
 
-			echo ("<script>alert('Password salah silakan isi kembali')</script>");
+			echo '<script>
+			
+			alert("Login berhasil");
+			window.location.href = "../customer/index.php"
+			
+			</script>';
+		} else if ($d->role == "admin") {
+			$_SESSION['admin'] = $username;
+			$_SESSION['a_global'] = $d;
+			$_SESSION['id'] = $d->id;
+
+			echo '<script>
+			
+			alert("Login berhasil");
+			window.location.href = "index.php"
+			
+			</script>';
 		}
-	} else {
-		echo ("<script>alert('Username dan Password salah silakan isi kembali')</script>");
 
+	} else {
+		echo '<script>
+		
+		alert("Login gagal");
+		window.location.href = "login.php"
+		
+		</script>';
 	}
 }
 ?>
@@ -39,7 +58,7 @@ if (isset($_POST["login"])) {
 
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
-	<link rel="stylesheet" type="text/css" href="../css/style.css">
+	<link rel="stylesheet" type="text/css" href="../../css/style.css">
 
 	<title>Login Form </title>
 </head>
@@ -55,7 +74,7 @@ if (isset($_POST["login"])) {
 				<input type="password" placeholder="Password" name="password">
 			</div>
 			<div class="input-group">
-				<button type="submit" name="login" class="btn">Login</button>
+				<input type="submit" name="login" class="btn" value="Login">
 			</div>
 			<p class="login-register-text">Have an account? <a href="register.php">Register</a>.</p>
 		</form>

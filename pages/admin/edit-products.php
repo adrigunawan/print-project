@@ -1,3 +1,92 @@
+<?php
+
+session_start();
+require '../../config/config.php';
+
+// error_reporting(0);
+
+if ($_SESSION['status-login'] != true) {
+    echo "<script>
+    alert(You must login);
+
+    window.location.href = 'login.php';
+    </script>";
+}
+
+$products = mysqli_query($conn, "SELECT * FROM products WHERE id_products");
+
+$x = mysqli_fetch_object($products);
+
+
+if (isset($_POST["addnewbarang"])) {
+
+    // print_r($_FILES['gambar']);
+
+    // Menampung inputan file dari file
+
+
+    $namabarang = $_POST['name'];
+    $gambarbarang = $_POST['image'];
+    $stockbarang = $_POST['stock'];
+    $price = $_POST['price'];
+
+    // Menampung data format file yang dizinkan
+    $nama_file = $_FILES['gambar']['name'];
+    $tmp_file = $_FILES['gambar']['tmp_name'];
+    // validasi format data
+
+    if ($nama_file != '') {
+
+        $type_file = explode('.', $nama_file);
+        $input_file = $type_file[1];
+
+        $new_file = 'products' . time() . '.' . $input_file;
+
+        // input yang dizinkan
+        $type_approved = array('jpg', 'png', 'jpeg', 'gif');
+
+        if (!in_array($input_file, $type_approved)) {
+
+            echo '<script>
+        
+            alert("format tidak sesuai");
+        
+            </script>';
+
+        } else {
+
+            unlink('../../assets/img/' . $gambarbarang);
+
+            move_uploaded_file($tmp_file, '../../assets/img/' . $new_file);
+
+            $new_image = $new_file;
+        }
+
+        $update = mysqli_query($conn, "UPDATE products SET name = '" . $namabarang . "',
+        gambar = '" . $new_image . "',
+        stock = '" . $stockbarang . "',
+        price = '" . $price . "'        
+        WHERE id_products = '" . $x->id_products . "'
+        ");
+
+        if ($update) {
+            echo '<script>
+            
+            alert("product berhasil di update");
+            window.location.href = "index.php";
+
+            </script>';
+        } else {
+            echo 'Produk gagal ditambahkan', mysqli_error($conn);
+        }
+
+    } else {
+        $new_image = $gambarbarang;
+
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,7 +96,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="description" content="" />
     <meta name="author" content="" />
-    <title>Static Navigation - SB Admin</title>
+    <title>PrinKu - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
     <link href="../../css/home.css" rel="stylesheet" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 </head>
@@ -34,12 +124,12 @@
                 <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown"
                     aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                    <li><a class="dropdown-item" href="#!">Settings</a></li>
+                    <li><a class="dropdown-item" href="profile.php">Settings</a></li>
                     <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                     <li>
                         <hr class="dropdown-divider" />
                     </li>
-                    <li><a class="dropdown-item" href="#!">Logout</a></li>
+                    <li><a class="dropdown-item" href="logout.php">Logout</a></li>
                 </ul>
             </li>
         </ul>
@@ -49,7 +139,6 @@
             <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
                 <div class="sb-sidenav-menu">
                     <div class="nav">
-                        <div class="sb-sidenav-menu-heading">Core</div>
                         <a class="nav-link" href="index.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard
@@ -64,8 +153,7 @@
                         <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne"
                             data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="layout-static.html">Static Navigation</a>
-                                <a class="nav-link" href="layout-sidenav-light.html">Light Sidenav</a>
+                                <a class="nav-link" href="update-products.php">Update dan Create Produk</a>
                             </nav>
                         </div>
                         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages"
@@ -80,7 +168,7 @@
                                 <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
                                     data-bs-target="#pagesCollapseAuth" aria-expanded="false"
                                     aria-controls="pagesCollapseAuth">
-                                    Authentication
+                                    Autentikasi
                                     <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                                 </a>
                                 <div class="collapse" id="pagesCollapseAuth" aria-labelledby="headingOne"
@@ -88,21 +176,6 @@
                                     <nav class="sb-sidenav-menu-nested nav">
                                         <a class="nav-link" href="login.html">Login</a>
                                         <a class="nav-link" href="register.html">Register</a>
-                                        <a class="nav-link" href="password.html">Forgot Password</a>
-                                    </nav>
-                                </div>
-                                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
-                                    data-bs-target="#pagesCollapseError" aria-expanded="false"
-                                    aria-controls="pagesCollapseError">
-                                    Error
-                                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                                </a>
-                                <div class="collapse" id="pagesCollapseError" aria-labelledby="headingOne"
-                                    data-bs-parent="#sidenavAccordionPages">
-                                    <nav class="sb-sidenav-menu-nested nav">
-                                        <a class="nav-link" href="401.html">401 Page</a>
-                                        <a class="nav-link" href="404.html">404 Page</a>
-                                        <a class="nav-link" href="500.html">500 Page</a>
                                     </nav>
                                 </div>
                             </nav>
@@ -112,7 +185,7 @@
                             <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
                             Charts
                         </a>
-                        <a class="nav-link" href="tables.html">
+                        <a class="nav-link" href="tables.php">
                             <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
                             Tables
                         </a>
@@ -120,25 +193,41 @@
                 </div>
                 <div class="sb-sidenav-footer">
                     <div class="small">Logged in as:</div>
-                    Start Bootstrap
+                    <p>
+                        <?php echo $_SESSION['a_global']->username ?>
+                    </p>
                 </div>
             </nav>
         </div>
         <div id="layoutSidenav_content">
             <main>
-                <div class="container-fluid px-4">
-                    <h1 class="mt-4">Static Navigation</h1>
-                    <ol class="breadcrumb mb-4">
-                        <li class="breadcrumb-item"><a href="index.php">Dashboard</a></li>
-                        <li class="breadcrumb-item active">Static Navigation</li>
-                    </ol>
-                  
-                    <div style="height: 100vh"></div>
-                    <div class="card mb-4">
-                        <div class="card-body">When scrolling, the navigation stays at the top of the page. This is the
-                            end of the static navigation demo.</div>
+                <form method="POST" enctype="multipart/form-data" class="w-75" style="overflow: hidden;">
+                    <div class="container-fluid mt-3 " style="transform: translateX(35%);">
+                        <h4>Update produkt</h4>
+                        <div class="mb-3">
+                            <label for='products' class=" w-50">nama barang</label>
+                            <input class="form-control w-50" type="text" name="name">
+                        </div>
+                        <div class="mb-3">
+                            <label for='products' class=" w-50">Gambar barang</label>
+                            <input class="form-control w-50" type="file" name="gambar">
+                        </div>
+                        <div class="mb-3">
+                            <input type="hidden" name="image" value="<?php echo $x->gambar ?>">
+                        </div>
+                        <div class="mb-3">
+                            <label for='products' class=" w-50">Stock barang</label>
+                            <input class="form-control w-50" type="number" name="stock">
+                        </div>
+                        <div class="mb-3">
+                            <label for='products' class=" w-50">Harga barang</label>
+                            <input class="form-control w-50" type="number" name="price">
+                        </div>
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary" name="addnewbarang">Add barang</button>
+                        </div>
                     </div>
-                </div>
+                </form>
             </main>
             <footer class="py-4 bg-light mt-auto">
                 <div class="container-fluid px-4">
@@ -156,7 +245,13 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
         crossorigin="anonymous"></script>
-    <script src="../../js/scripts.js"></script>
+    <script src="../../assets/demo/scripts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+    <script src="../../assets/demo/chart-area-demo.js"></script>
+    <script src="../../assets/demo/chart-bar-demo.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
+        crossorigin="anonymous"></script>
+    <script src="../../assets/demo/datatables-simple-demo.js"></script>
 </body>
 
 </html>
